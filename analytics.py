@@ -78,18 +78,19 @@ extract = fetch_extract()
 
 people = fetch_people()
 
-lou = duckdb.sql("""SELECT * FROM extract
+lou = duckdb.sql("""SELECT date, first_name, last_name, category, activity as notes, hours FROM extract
                  WHERE first_name = 'Lou' AND category = 'Specific Assistance' AND activity LIKE 'Hassan%'""").df()
 
-hassan = duckdb.sql("""SELECT * FROM extract
-                    WHERE first_name = 'Hassan'""").df()
+hassan = duckdb.sql("""SELECT date, first_name, last_name, category, activity as notes, hours FROM extract
+                    WHERE first_name = 'Hassan'
+                    AND YEAR(date) >= 2022""").df()
 
 lou_to_hassan = duckdb.sql("""SELECT first_name||' '||last_name AS Name, SUM(hours) AS 'Total Hours' FROM extract
                            WHERE category = 'Specific Assistance' AND activity LIKE 'Hassan%' AND YEAR(date) >= 2021
                            GROUP BY first_name, last_name""").df()
 
 hassan_hours = duckdb.sql("""SELECT first_name||' '||last_name AS Name, SUM(hours) AS 'Total Hours' FROM extract
-                           WHERE first_name = 'Hassan' AND YEAR(date) >= 2021
+                           WHERE first_name = 'Hassan' AND YEAR(date) >= 2022
                            GROUP BY first_name, last_name""").df()
 
 cat_1800_cash = duckdb.sql("""SELECT e.first_name||' '||REPLACE(e.last_name,'none','') AS Name,
@@ -242,41 +243,41 @@ people_1016 = duckdb.sql("""SELECT first_name, last_name FROM extract
 
 st.write('# YESHUA RESTORATION MINISTRIES (YRM) DATABASE REPORT')
 
-st.write("1. Extract of YRM's Database")
-st.write(extract)
+# st.write("1. Extract of YRM's Database")
+# st.write(extract)
 
-st.write("2. Extract of Lou's Records from YRM's Database")
-st.write(lou)
+st.write("1. Extract of Lou's Specific Assistance to Hassan Records from YRM's Database")
+st.table(lou)
 
-st.write("3. Extract of Hassan Adam's Records from YRM's Database")
-st.write(hassan)
+st.write("2. Extract of Hassan Adam's Records from YRM's Database")
+st.table(hassan)
 
-st.write('4. Lou performed 247.5 hours of Specific Assistance to Hassan from May 2021 to Feb 1st, 2024.')
+st.write('3. Hours of Specific Assistance to Hassan performed by Lou from Nov 2022 to Dec 2024.')
 st.table(lou_to_hassan)
 
-st.write('5. Hassan volunteered 213.75 hours from Jun 2021 to Feb 1st, 2024.')
+st.write('4. Hours volunteered by Hassan from Nov 2022 to Dec 2024.')
 st.table(hassan_hours)
 
-st.write('6. Number of hours worked by individuals paid by YRM Dev Corp at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
-st.table(cat_1800_cash)
-st.table(cat_1800_cash_total)
+# st.write('6. Number of hours worked by individuals paid by YRM Dev Corp at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
+# st.table(cat_1800_cash)
+# st.table(cat_1800_cash_total)
 
-st.write('7. Number of hours worked by individuals paid by CNY Works at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
-st.table(cat_1800_cny)
-st.table(cat_1800_cny_total)
+# st.write('7. Number of hours worked by individuals paid by CNY Works at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
+# st.table(cat_1800_cny)
+# st.table(cat_1800_cny_total)
 
-st.write('8. Number of hours volunteers have worked at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
-st.table(cat_1800_vol)
-st.table(cat_1800_vol_total)
+# st.write('8. Number of hours volunteers have worked at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
+# st.table(cat_1800_vol)
+# st.table(cat_1800_vol_total)
 
-st.write('9. Number of hours worked by individuals paid by YRM Dev Corp at 1809 Lodi from Dec 2020 to Feb 1st. 2024.')
-st.table(cat_1809_cash)
-st.table(cat_1809_cash_total)
+# st.write('9. Number of hours worked by individuals paid by YRM Dev Corp at 1809 Lodi from Dec 2020 to Feb 1st. 2024.')
+# st.table(cat_1809_cash)
+# st.table(cat_1809_cash_total)
 
-st.write('10. Freddie Williams worked 86 hours total at 1809 Lodi from Feb 2021 to Jun 2022; paid by CNY Works.')
-st.table(fw_1809)
+# st.write('10. Freddie Williams worked 86 hours total at 1809 Lodi from Feb 2021 to Jun 2022; paid by CNY Works.')
+# st.table(fw_1809)
 
-st.write('11. Number of hours volunteers have worked at 1809 Lodi from Dec 2020 to Feb 1st, 2024.')
-st.table(cat_1809_vol)
-st.table(cat_1809_vol_total)
-st.write('*Comment: Jessica’s hours start December 2020 and end May 14, 2021.*')
+# st.write('11. Number of hours volunteers have worked at 1809 Lodi from Dec 2020 to Feb 1st, 2024.')
+# st.table(cat_1809_vol)
+# st.table(cat_1809_vol_total)
+# st.write('*Comment: Jessica’s hours start December 2020 and end May 14, 2021.*')
