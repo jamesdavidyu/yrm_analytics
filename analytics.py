@@ -1,77 +1,80 @@
-import asyncio
-import asyncpg
 import duckdb
 from os import getenv
 import pandas as pd
+import psycopg
 import streamlit as st
 
-async def fetch_extract():
+def fetch_extract():
     user = getenv("PGUSER")
     password = getenv("PGPASSWORD")
     host = getenv("PGHOST")
     port = getenv("PORT")
     database = getenv("PGDATABASE")
-    cloud = await asyncpg.connect(
-        database=database,
+    cloud = psycopg.connect(
+        dbname=database,
         user=user,
         password=password,
         host=host,
         port=port
     )
 
-    df = pd.DataFrame(await cloud.fetch(
-        """
-            SELECT 
-                r.id, 
-                r.date, 
-                c.category, 
-                p.first_name, 
-                p.last_name, 
-                ro.role, 
-                a.activity, 
-                r.hours, 
-                r.money, 
-                r.comments, 
-                r.category_id,
-                r.name_id,
-                r.role_id,
-                r.activity_id
-            FROM records r
-            JOIN categories c ON c.id = r.category_id
-            JOIN people p ON p.id = r.name_id
-            JOIN roles ro ON ro.id = r.role_id
-            JOIN activities a ON a.id = r.activity_id
-            ORDER BY r.date
-        """
-    ), columns=['id', 'date', 'category', 'first_name', 'last_name', 'role', 'activity', 'hours', 'money', 'comments', 'category_id', 'name_id', 'role_id', 'activity_id'])
+    with cloud.cursor() as cursor:
+        cursor.execute(
+            """
+                SELECT 
+                    r.id, 
+                    r.date, 
+                    c.category, 
+                    p.first_name, 
+                    p.last_name, 
+                    ro.role, 
+                    a.activity, 
+                    r.hours, 
+                    r.money, 
+                    r.comments, 
+                    r.category_id,
+                    r.name_id,
+                    r.role_id,
+                    r.activity_id
+                FROM records r
+                JOIN categories c ON c.id = r.category_id
+                JOIN people p ON p.id = r.name_id
+                JOIN roles ro ON ro.id = r.role_id
+                JOIN activities a ON a.id = r.activity_id
+                ORDER BY r.date;
+            """
+        )
+        df = pd.DataFrame(cursor.fetchall(), columns=['id', 'date', 'category', 'first_name', 'last_name', 'role', 'activity', 'hours', 'money', 'comments', 'category_id', 'name_id', 'role_id', 'activity_id'])
 
-    await cloud.close()
+    cloud.close()
 
     return df
 
-async def fetch_people():
+def fetch_people():
     user = getenv("PGUSER")
     password = getenv("PGPASSWORD")
     host = getenv("PGHOST")
     port = getenv("PORT")
     database = getenv("PGDATABASE")
-    cloud = await asyncpg.connect(
-        database=database,
+    cloud = psycopg.connect(
+        dbname=database,
         user=user,
         password=password,
         host=host,
         port=port
     )
 
-    df = pd.DataFrame(await cloud.fetch('SELECT * FROM people'), columns=['id', 'first_name', 'last_name', 'dob', 'rate'])
-
-    await cloud.close()
+    with cloud.cursor() as cursor:
+        cursor.execute('SELECT * FROM people;')
+        df = pd.DataFrame(cursor.fetchall(), columns=['id', 'first_name', 'last_name', 'dob', 'rate'])
+    
+    cloud.close()
 
     return df
 
-extract = asyncio.run(fetch_extract())
+extract = fetch_extract()
 
-people = asyncio.run(fetch_people())
+people = fetch_people()
 
 lou = duckdb.sql("""SELECT * FROM extract
                  WHERE first_name = 'Lou' AND category = 'Specific Assistance' AND activity LIKE 'Hassan%'""").df()
