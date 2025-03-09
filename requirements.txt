@@ -3,4 +3,5 @@ duckdb_engine==0.15.0
 pandas==1.5.3
 psycopg==3.1.18
 psycopg2-binary==2.9.9
+psycopg2=2.9.9
 streamlit==1.31.1
