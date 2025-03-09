@@ -15,7 +15,8 @@ def fetch_extract():
         user=user,
         password=password,
         host=host,
-        port=port
+        port=port,
+        sslmode="require"
     )
 
     with cloud.cursor() as cursor:
@@ -61,7 +62,8 @@ def fetch_people():
         user=user,
         password=password,
         host=host,
-        port=port
+        port=port,
+        sslmode="require"
     )
 
     with cloud.cursor() as cursor:
