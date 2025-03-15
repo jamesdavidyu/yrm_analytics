@@ -3,6 +3,9 @@ from os import getenv
 import pandas as pd
 import psycopg
 import streamlit as st
+import matplotlib.pyplot as plt
+
+# TODO: fetch data from api
 
 def fetch_extract():
     user = getenv("PGUSER")
@@ -241,22 +244,59 @@ people_1016 = duckdb.sql("""SELECT first_name, last_name FROM extract
                          GROUP BY first_name, last_name
                          ORDER BY first_name""").df()
 
+hours_1016 = duckdb.sql("""SELECT category AS Category, SUM(hours) as Hours FROM extract
+                        WHERE category = '1016 N. Townsend'
+                        GROUP BY category""").df()
+
+hours_vol_1016 = duckdb.sql("""SELECT first_name || ' ' || (CASE WHEN last_name = 'none' THEN '' ELSE last_name END) AS Name, SUM(hours) AS Hours
+                            FROM extract
+                            WHERE category = '1016 N. Townsend'
+                            GROUP BY Name
+                            ORDER BY Name""").df()
+
+hours_yearly_1016 = duckdb.sql("""SELECT YEAR(date) AS Year, SUM(hours) AS Hours
+                               FROM extract
+                               GROUP BY Year
+                               ORDER BY Year""").df()
+
+fig, ax = plt.subplots()
+bars = ax.bar(hours_yearly_1016['Year'], hours_yearly_1016['Hours'])
+ax.set_title('3. Total hours worked on 1016 N. Townsend by year from Apr 2016 to Dec 2024.')
+ax.set_xlabel('Year')
+ax.set_ylabel('Hours')
+for bar in bars:
+    height = bar.get_height()
+    ax.text(bar.get_x() + bar.get_width()/2, height, f'{height}', ha='center', va='bottom')
+
+check_1016 = duckdb.sql("SELECT * FROM extract WHERE category = '1016 N. Townsend'").df()
+
 st.write('# YESHUA RESTORATION MINISTRIES (YRM) DATABASE REPORT')
+
+# st.write(check_1016)
+
+st.write('1. Total hours worked on 1016 N. Townsend from Apr 2016 to Dec 2024.')
+st.table(hours_1016)
+
+st.write('2. Total hours worked on 1016 N. Townsend per volunteer from Apr 2016 to Dec 2024.')
+st.table(hours_vol_1016)
+
+st.pyplot(fig)
+st.table(hours_yearly_1016)
 
 # st.write("1. Extract of YRM's Database")
 # st.write(extract)
 
-st.write("1. Extract of Lou's Specific Assistance to Hassan Records from YRM's Database")
-st.table(lou)
+# st.write("1. Extract of Lou's Specific Assistance to Hassan Records from YRM's Database")
+# st.table(lou)
 
-st.write("2. Extract of Hassan Adam's Records from YRM's Database")
-st.table(hassan)
+# st.write("2. Extract of Hassan Adam's Records from YRM's Database")
+# st.table(hassan)
 
-st.write('3. Hours of Specific Assistance to Hassan performed by Lou from Nov 2022 to Dec 2024.')
-st.table(lou_to_hassan)
+# st.write('3. Hours of Specific Assistance to Hassan performed by Lou from Nov 2022 to Dec 2024.')
+# st.table(lou_to_hassan)
 
-st.write('4. Hours volunteered by Hassan from Nov 2022 to Dec 2024.')
-st.table(hassan_hours)
+# st.write('4. Hours volunteered by Hassan from Nov 2022 to Dec 2024.')
+# st.table(hassan_hours)
 
 # st.write('6. Number of hours worked by individuals paid by YRM Dev Corp at 1800 Lodi from Jun 2017 to Feb 1st, 2024.')
 # st.table(cat_1800_cash)
